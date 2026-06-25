@@ -19,8 +19,8 @@ async function fetchDiscoverData(searchParams: Record<string, string | undefined
     getWatchProviderList("movie"),
     discoverMovies({
       page,
-      with_genres: searchParams.genre || undefined,
-      with_watch_providers: searchParams.provider || undefined,
+      with_genres: searchParams.genre?.replace(/,/g, "|") || undefined,
+      with_watch_providers: searchParams.provider?.replace(/,/g, "|") || undefined,
       sort_by: searchParams.sort || "popularity.desc",
       primary_release_year: searchParams.year || undefined,
       vote_average_gte: searchParams.rating || undefined,

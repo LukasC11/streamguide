@@ -213,7 +213,7 @@ export default async function TVPage({
                     <h3 className="mb-2 text-sm font-semibold text-zinc-200">Stream</h3>
                     <div className="flex flex-wrap gap-2">
                       {usProviders.flatrate.map((p) => (
-                        <ServiceBadge key={p.provider_id} provider={p} />
+                        <ServiceBadge key={p.provider_id} provider={p} link={usProviders.link} />
                       ))}
                     </div>
                   </div>
@@ -223,7 +223,7 @@ export default async function TVPage({
                     <h3 className="mb-2 text-sm font-semibold text-zinc-200">Rent</h3>
                     <div className="flex flex-wrap gap-2">
                       {usProviders.rent.map((p) => (
-                        <ServiceBadge key={p.provider_id} provider={p} />
+                        <ServiceBadge key={p.provider_id} provider={p} link={usProviders.link} />
                       ))}
                     </div>
                   </div>
@@ -233,7 +233,7 @@ export default async function TVPage({
                     <h3 className="mb-2 text-sm font-semibold text-zinc-200">Buy</h3>
                     <div className="flex flex-wrap gap-2">
                       {usProviders.buy.map((p) => (
-                        <ServiceBadge key={p.provider_id} provider={p} />
+                        <ServiceBadge key={p.provider_id} provider={p} link={usProviders.link} />
                       ))}
                     </div>
                   </div>
