@@ -14,6 +14,13 @@ export interface MediaItem {
   popularity: number;
 }
 
+export interface ProductionCompany {
+  id: number;
+  name: string;
+  logo_path: string | null;
+  origin_country: string;
+}
+
 export interface MovieDetails {
   id: number;
   title: string;
@@ -29,6 +36,20 @@ export interface MovieDetails {
   status: string;
   budget: number;
   revenue: number;
+  production_companies: ProductionCompany[];
+  original_language: string;
+  spoken_languages: { english_name: string; iso_639_1: string }[];
+}
+
+export interface Season {
+  id: number;
+  name: string;
+  overview: string;
+  poster_path: string | null;
+  season_number: number;
+  episode_count: number;
+  air_date: string | null;
+  vote_average: number;
 }
 
 export interface TVDetails {
@@ -43,10 +64,15 @@ export interface TVDetails {
   last_air_date: string;
   number_of_seasons: number;
   number_of_episodes: number;
+  episode_run_time: number[];
   genres: Genre[];
   tagline: string;
   status: string;
+  type: string;
   networks: { id: number; name: string; logo_path: string | null }[];
+  seasons: Season[];
+  created_by: { id: number; name: string; profile_path: string | null }[];
+  original_language: string;
 }
 
 export interface Genre {

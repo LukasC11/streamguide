@@ -33,12 +33,18 @@ async function fetchTVData(tvId: number) {
   const backdropUrl = getImageUrl(show.backdrop_path, "w1280");
   const posterUrl = getImageUrl(show.poster_path, "w500");
   const year = getYear(show.first_air_date);
+  const lastYear = getYear(show.last_air_date);
+  const yearRange = lastYear && lastYear !== year ? `${year}\u2013${lastYear}` : year;
 
   const similarItems: MediaItem[] = similar.results
     .slice(0, 10)
     .map((s) => ({ ...s, media_type: "tv" as const }));
 
-  return { show, trailer, usProviders, cast, backdropUrl, posterUrl, year, similarItems };
+  const episodeRuntime = show.episode_run_time?.length
+    ? `${show.episode_run_time[0]}m per episode`
+    : null;
+
+  return { show, trailer, usProviders, cast, backdropUrl, posterUrl, yearRange, similarItems, episodeRuntime };
 }
 
 export default async function TVPage({
@@ -59,7 +65,9 @@ export default async function TVPage({
     notFound();
   }
 
-  const { show, trailer, usProviders, cast, backdropUrl, posterUrl, year, similarItems } = data;
+  const { show, trailer, usProviders, cast, backdropUrl, posterUrl, yearRange, similarItems, episodeRuntime } = data;
+
+  const seasons = show.seasons?.filter((s) => s.season_number > 0) ?? [];
 
   return (
     <div>
@@ -106,19 +114,37 @@ export default async function TVPage({
             </div>
 
             <div className="flex flex-wrap items-center gap-3 text-sm">
-              {year && (
-                <span className="text-zinc-400">{year}</span>
-              )}
+              {yearRange && <span className="text-zinc-400">{yearRange}</span>}
               <span className="text-zinc-400">
                 {show.number_of_seasons} Season{show.number_of_seasons !== 1 ? "s" : ""}
               </span>
-              <span className="text-zinc-400">{show.status}</span>
+              <span className="text-zinc-400">
+                {show.number_of_episodes} Episode{show.number_of_episodes !== 1 ? "s" : ""}
+              </span>
+              {episodeRuntime && (
+                <span className="text-zinc-400">{episodeRuntime}</span>
+              )}
+              <span className={`rounded px-2 py-0.5 text-xs font-medium ${
+                show.status === "Returning Series"
+                  ? "bg-emerald-900/50 text-emerald-400"
+                  : show.status === "Ended"
+                    ? "bg-zinc-800 text-zinc-400"
+                    : "bg-amber-900/50 text-amber-400"
+              }`}>
+                {show.status}
+              </span>
+              {show.type && show.type !== "Scripted" && (
+                <span className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
+                  {show.type}
+                </span>
+              )}
               {show.vote_average > 0 && (
                 <span className="flex items-center gap-1 text-zinc-300">
                   <svg className="h-4 w-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                   {show.vote_average.toFixed(1)}
+                  <span className="text-zinc-500">({show.vote_count.toLocaleString()})</span>
                 </span>
               )}
             </div>
@@ -142,11 +168,18 @@ export default async function TVPage({
               </p>
             )}
 
+            {show.created_by?.length > 0 && (
+              <div>
+                <p className="text-xs text-zinc-500">Created by</p>
+                <p className="text-sm text-zinc-200">
+                  {show.created_by.map((c) => c.name).join(", ")}
+                </p>
+              </div>
+            )}
+
             {show.networks.length > 0 && (
               <div>
-                <h3 className="mb-2 text-sm font-semibold text-zinc-200">
-                  Network
-                </h3>
+                <h3 className="mb-2 text-sm font-semibold text-zinc-200">Network</h3>
                 <div className="flex flex-wrap gap-3">
                   {show.networks.map((network) => {
                     const logoUrl = getImageUrl(network.logo_path, "w154");
@@ -164,9 +197,7 @@ export default async function TVPage({
                             className="object-contain brightness-0 invert"
                           />
                         ) : (
-                          <span className="text-sm text-zinc-300">
-                            {network.name}
-                          </span>
+                          <span className="text-sm text-zinc-300">{network.name}</span>
                         )}
                       </div>
                     );
@@ -179,9 +210,7 @@ export default async function TVPage({
               <div className="space-y-3">
                 {usProviders.flatrate && usProviders.flatrate.length > 0 && (
                   <div>
-                    <h3 className="mb-2 text-sm font-semibold text-zinc-200">
-                      Stream
-                    </h3>
+                    <h3 className="mb-2 text-sm font-semibold text-zinc-200">Stream</h3>
                     <div className="flex flex-wrap gap-2">
                       {usProviders.flatrate.map((p) => (
                         <ServiceBadge key={p.provider_id} provider={p} />
@@ -191,9 +220,7 @@ export default async function TVPage({
                 )}
                 {usProviders.rent && usProviders.rent.length > 0 && (
                   <div>
-                    <h3 className="mb-2 text-sm font-semibold text-zinc-200">
-                      Rent
-                    </h3>
+                    <h3 className="mb-2 text-sm font-semibold text-zinc-200">Rent</h3>
                     <div className="flex flex-wrap gap-2">
                       {usProviders.rent.map((p) => (
                         <ServiceBadge key={p.provider_id} provider={p} />
@@ -203,9 +230,7 @@ export default async function TVPage({
                 )}
                 {usProviders.buy && usProviders.buy.length > 0 && (
                   <div>
-                    <h3 className="mb-2 text-sm font-semibold text-zinc-200">
-                      Buy
-                    </h3>
+                    <h3 className="mb-2 text-sm font-semibold text-zinc-200">Buy</h3>
                     <div className="flex flex-wrap gap-2">
                       {usProviders.buy.map((p) => (
                         <ServiceBadge key={p.provider_id} provider={p} />
@@ -217,6 +242,56 @@ export default async function TVPage({
             )}
           </div>
         </div>
+
+        {seasons.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mb-4 text-xl font-bold text-zinc-100">Seasons</h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {seasons.map((season) => {
+                const seasonPoster = getImageUrl(season.poster_path, "w185");
+                const seasonYear = season.air_date ? getYear(season.air_date) : null;
+                return (
+                  <div
+                    key={season.id}
+                    className="flex gap-3 rounded-lg bg-zinc-900 p-3 ring-1 ring-zinc-800"
+                  >
+                    {seasonPoster ? (
+                      <Image
+                        src={seasonPoster}
+                        alt={season.name}
+                        width={60}
+                        height={90}
+                        className="shrink-0 rounded object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-[90px] w-[60px] shrink-0 items-center justify-center rounded bg-zinc-800 text-xs text-zinc-600">
+                        S{season.season_number}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-zinc-200">{season.name}</p>
+                      <p className="text-xs text-zinc-500">
+                        {season.episode_count} episode{season.episode_count !== 1 ? "s" : ""}
+                        {seasonYear ? ` \u00B7 ${seasonYear}` : ""}
+                      </p>
+                      {season.vote_average > 0 && (
+                        <div className="mt-1 flex items-center gap-1">
+                          <svg className="h-3 w-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                          <span className="text-xs text-zinc-400">{season.vote_average.toFixed(1)}</span>
+                        </div>
+                      )}
+                      {season.overview && (
+                        <p className="mt-1 text-xs text-zinc-400 line-clamp-2">{season.overview}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {trailer && (
           <section className="mt-10">
@@ -258,12 +333,8 @@ export default async function TVPage({
                         </div>
                       )}
                     </div>
-                    <p className="text-xs font-medium text-zinc-200 line-clamp-1">
-                      {member.name}
-                    </p>
-                    <p className="text-[11px] text-zinc-500 line-clamp-1">
-                      {member.character}
-                    </p>
+                    <p className="text-xs font-medium text-zinc-200 line-clamp-1">{member.name}</p>
+                    <p className="text-[11px] text-zinc-500 line-clamp-1">{member.character}</p>
                   </div>
                 );
               })}
