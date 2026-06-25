@@ -31,16 +31,22 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-4 text-sm font-medium sm:flex">
           <Link
-            href="/?type=movie"
+            href="/discover/movie"
             className="text-zinc-400 transition-colors hover:text-white"
           >
             Movies
           </Link>
           <Link
-            href="/?type=tv"
+            href="/discover/tv"
             className="text-zinc-400 transition-colors hover:text-white"
           >
             TV Shows
+          </Link>
+          <Link
+            href="/recommend"
+            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-white transition-colors hover:bg-indigo-500"
+          >
+            Find My Next Watch
           </Link>
         </div>
       </div>
