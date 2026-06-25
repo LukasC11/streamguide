@@ -10,6 +10,7 @@ import DiscoverFilters from "@/components/DiscoverFilters";
 import MediaGrid from "@/components/MediaGrid";
 import Pagination from "@/components/Pagination";
 import SetupGuide from "@/components/SetupGuide";
+import RandomPick from "@/components/RandomPick";
 
 async function fetchDiscoverData(searchParams: Record<string, string | undefined>) {
   const page = parseInt(searchParams.page ?? "1", 10) || 1;
@@ -59,9 +60,10 @@ export default async function DiscoverMoviePage({
         <DiscoverFilters genres={genres} providers={providers} mediaType="movie" />
       </Suspense>
 
-      <div className="mt-8">
+      <div className="mt-8 space-y-8">
         {items.length > 0 ? (
           <>
+            <RandomPick items={items} />
             <MediaGrid items={items} />
             <Suspense fallback={null}>
               <Pagination currentPage={page} totalPages={totalPages} basePath="/discover/movie" />

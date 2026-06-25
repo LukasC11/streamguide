@@ -43,6 +43,18 @@ export default function Navbar() {
             TV Shows
           </Link>
           <Link
+            href="/calendar"
+            className="text-zinc-400 transition-colors hover:text-white"
+          >
+            Calendar
+          </Link>
+          <Link
+            href="/watchlist"
+            className="text-zinc-400 transition-colors hover:text-white"
+          >
+            Watchlist
+          </Link>
+          <Link
             href="/recommend"
             className="rounded-lg bg-indigo-600 px-3 py-1.5 text-white transition-colors hover:bg-indigo-500"
           >

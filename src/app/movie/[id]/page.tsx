@@ -14,6 +14,7 @@ import type { MediaItem } from "@/lib/types";
 import ServiceBadge from "@/components/ServiceBadge";
 import MediaGrid from "@/components/MediaGrid";
 import SetupGuide from "@/components/SetupGuide";
+import WhereToWatch from "@/components/WhereToWatch";
 
 function formatCurrency(amount: number): string {
   if (amount >= 1_000_000_000) return `$${(amount / 1_000_000_000).toFixed(1)}B`;
@@ -215,6 +216,8 @@ export default async function MoviePage({
             )}
           </div>
         </div>
+
+        {usProviders && <WhereToWatch providers={usProviders} />}
 
         {movie.production_companies.length > 0 && (
           <section className="mt-10">

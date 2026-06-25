@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { MediaItem } from "@/lib/types";
 import { getDisplayTitle, getDisplayDate, getYear, getImageUrl } from "@/lib/tmdb";
+import WatchlistButton from "./WatchlistButton";
 
 export default function MediaCard({ item }: { item: MediaItem }) {
   const title = getDisplayTitle(item);
@@ -41,10 +42,13 @@ export default function MediaCard({ item }: { item: MediaItem }) {
           </div>
         )}
 
-        <div className="absolute right-2 top-2">
+        <div className="absolute right-2 top-2 flex flex-col items-end gap-1.5">
           <span className="rounded-md bg-indigo-600/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm">
             {type === "tv" ? "TV" : "Film"}
           </span>
+          <div className="opacity-0 transition-opacity group-hover:opacity-100">
+            <WatchlistButton item={item} />
+          </div>
         </div>
       </div>
 

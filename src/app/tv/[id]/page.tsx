@@ -14,6 +14,7 @@ import type { MediaItem } from "@/lib/types";
 import ServiceBadge from "@/components/ServiceBadge";
 import MediaGrid from "@/components/MediaGrid";
 import SetupGuide from "@/components/SetupGuide";
+import WhereToWatch from "@/components/WhereToWatch";
 
 async function fetchTVData(tvId: number) {
   const [show, credits, videos, providers, similar] = await Promise.all([
@@ -242,6 +243,8 @@ export default async function TVPage({
             )}
           </div>
         </div>
+
+        {usProviders && <WhereToWatch providers={usProviders} />}
 
         {seasons.length > 0 && (
           <section className="mt-10">
