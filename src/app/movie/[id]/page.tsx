@@ -15,6 +15,13 @@ import ServiceBadge from "@/components/ServiceBadge";
 import MediaGrid from "@/components/MediaGrid";
 import SetupGuide from "@/components/SetupGuide";
 
+function formatCurrency(amount: number): string {
+  if (amount >= 1_000_000_000) return `$${(amount / 1_000_000_000).toFixed(1)}B`;
+  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(0)}M`;
+  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`;
+  return `$${amount}`;
+}
+
 async function fetchMovieData(movieId: number) {
   const [movie, credits, videos, providers, similar] = await Promise.all([
     getMovieDetails(movieId),
@@ -110,11 +117,12 @@ export default async function MoviePage({
             </div>
 
             <div className="flex flex-wrap items-center gap-3 text-sm">
-              {year && (
-                <span className="text-zinc-400">{year}</span>
-              )}
-              {runtime && (
-                <span className="text-zinc-400">{runtime}</span>
+              {year && <span className="text-zinc-400">{year}</span>}
+              {runtime && <span className="text-zinc-400">{runtime}</span>}
+              {movie.original_language && (
+                <span className="rounded bg-zinc-800 px-2 py-0.5 text-xs uppercase text-zinc-400">
+                  {movie.original_language}
+                </span>
               )}
               {movie.vote_average > 0 && (
                 <span className="flex items-center gap-1 text-zinc-300">
@@ -122,6 +130,7 @@ export default async function MoviePage({
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                   {movie.vote_average.toFixed(1)}
+                  <span className="text-zinc-500">({movie.vote_count.toLocaleString()})</span>
                 </span>
               )}
             </div>
@@ -145,13 +154,36 @@ export default async function MoviePage({
               </p>
             )}
 
+            {(movie.budget > 0 || movie.revenue > 0) && (
+              <div className="flex flex-wrap gap-6">
+                {movie.budget > 0 && (
+                  <div>
+                    <p className="text-xs text-zinc-500">Budget</p>
+                    <p className="text-sm font-medium text-zinc-200">{formatCurrency(movie.budget)}</p>
+                  </div>
+                )}
+                {movie.revenue > 0 && (
+                  <div>
+                    <p className="text-xs text-zinc-500">Revenue</p>
+                    <p className="text-sm font-medium text-zinc-200">{formatCurrency(movie.revenue)}</p>
+                  </div>
+                )}
+                {movie.budget > 0 && movie.revenue > 0 && (
+                  <div>
+                    <p className="text-xs text-zinc-500">Profit</p>
+                    <p className={`text-sm font-medium ${movie.revenue - movie.budget >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                      {movie.revenue - movie.budget >= 0 ? "+" : ""}{formatCurrency(movie.revenue - movie.budget)}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {usProviders && (
               <div className="space-y-3">
                 {usProviders.flatrate && usProviders.flatrate.length > 0 && (
                   <div>
-                    <h3 className="mb-2 text-sm font-semibold text-zinc-200">
-                      Stream
-                    </h3>
+                    <h3 className="mb-2 text-sm font-semibold text-zinc-200">Stream</h3>
                     <div className="flex flex-wrap gap-2">
                       {usProviders.flatrate.map((p) => (
                         <ServiceBadge key={p.provider_id} provider={p} />
@@ -161,9 +193,7 @@ export default async function MoviePage({
                 )}
                 {usProviders.rent && usProviders.rent.length > 0 && (
                   <div>
-                    <h3 className="mb-2 text-sm font-semibold text-zinc-200">
-                      Rent
-                    </h3>
+                    <h3 className="mb-2 text-sm font-semibold text-zinc-200">Rent</h3>
                     <div className="flex flex-wrap gap-2">
                       {usProviders.rent.map((p) => (
                         <ServiceBadge key={p.provider_id} provider={p} />
@@ -173,9 +203,7 @@ export default async function MoviePage({
                 )}
                 {usProviders.buy && usProviders.buy.length > 0 && (
                   <div>
-                    <h3 className="mb-2 text-sm font-semibold text-zinc-200">
-                      Buy
-                    </h3>
+                    <h3 className="mb-2 text-sm font-semibold text-zinc-200">Buy</h3>
                     <div className="flex flex-wrap gap-2">
                       {usProviders.buy.map((p) => (
                         <ServiceBadge key={p.provider_id} provider={p} />
@@ -187,6 +215,38 @@ export default async function MoviePage({
             )}
           </div>
         </div>
+
+        {movie.production_companies.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mb-4 text-xl font-bold text-zinc-100">Production</h2>
+            <div className="flex flex-wrap gap-4">
+              {movie.production_companies.map((company) => {
+                const logoUrl = getImageUrl(company.logo_path, "w154");
+                return (
+                  <div
+                    key={company.id}
+                    className="flex items-center gap-3 rounded-lg bg-zinc-900 px-4 py-3 ring-1 ring-zinc-800"
+                  >
+                    {logoUrl ? (
+                      <Image
+                        src={logoUrl}
+                        alt={company.name}
+                        width={48}
+                        height={24}
+                        className="object-contain brightness-0 invert"
+                      />
+                    ) : (
+                      <span className="text-sm text-zinc-300">{company.name}</span>
+                    )}
+                    {logoUrl && company.origin_country && (
+                      <span className="text-xs text-zinc-500">{company.origin_country}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {trailer && (
           <section className="mt-10">
@@ -228,12 +288,8 @@ export default async function MoviePage({
                         </div>
                       )}
                     </div>
-                    <p className="text-xs font-medium text-zinc-200 line-clamp-1">
-                      {member.name}
-                    </p>
-                    <p className="text-[11px] text-zinc-500 line-clamp-1">
-                      {member.character}
-                    </p>
+                    <p className="text-xs font-medium text-zinc-200 line-clamp-1">{member.name}</p>
+                    <p className="text-[11px] text-zinc-500 line-clamp-1">{member.character}</p>
                   </div>
                 );
               })}
