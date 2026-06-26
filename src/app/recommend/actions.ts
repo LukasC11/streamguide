@@ -26,7 +26,7 @@ export async function getRecommendations(
 ): Promise<MediaItem[]> {
   const moodGenres = MOOD_TO_GENRES[request.mood] ?? [];
   const allGenres = [...new Set([...request.genres.map(Number), ...moodGenres])];
-  const genreStr = allGenres.length > 0 ? allGenres.join(",") : undefined;
+  const genreStr = allGenres.length > 0 ? allGenres.join("|") : undefined;
   const providerStr = request.services.length > 0 ? request.services.join("|") : undefined;
 
   let runtimeGte: string | undefined;
@@ -50,7 +50,7 @@ export async function getRecommendations(
     watch_region: "US",
     sort_by: "vote_average.desc",
     vote_average_gte: request.minRating || "7",
-    vote_count_gte: "100",
+    vote_count_gte: "50",
     with_runtime_gte: runtimeGte,
     with_runtime_lte: runtimeLte,
   };

@@ -141,6 +141,31 @@ export async function getSimilar(
   return tmdbFetch(`/${type}/${id}/similar`);
 }
 
+export interface DiscoverDateRangeParams extends DiscoverParams {
+  primary_release_date_gte?: string;
+  primary_release_date_lte?: string;
+  first_air_date_gte?: string;
+  first_air_date_lte?: string;
+}
+
+export async function discoverMoviesDateRange(
+  params: DiscoverDateRangeParams
+): Promise<TMDBResponse<MediaItem>> {
+  const fetchParams = buildDiscoverParams(params);
+  if (params.primary_release_date_gte) fetchParams["primary_release_date.gte"] = params.primary_release_date_gte;
+  if (params.primary_release_date_lte) fetchParams["primary_release_date.lte"] = params.primary_release_date_lte;
+  return tmdbFetch("/discover/movie", fetchParams);
+}
+
+export async function discoverTVDateRange(
+  params: DiscoverDateRangeParams
+): Promise<TMDBResponse<MediaItem>> {
+  const fetchParams = buildDiscoverParams(params);
+  if (params.first_air_date_gte) fetchParams["first_air_date.gte"] = params.first_air_date_gte;
+  if (params.first_air_date_lte) fetchParams["first_air_date.lte"] = params.first_air_date_lte;
+  return tmdbFetch("/discover/tv", fetchParams);
+}
+
 export function getImageUrl(
   path: string | null,
   size: "w92" | "w154" | "w185" | "w342" | "w500" | "w780" | "w1280" | "original" = "w500"
